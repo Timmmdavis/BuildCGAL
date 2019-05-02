@@ -1,5 +1,22 @@
-function SetupCGAL()
+function TryRunFromPowershell(runexestring,desiredstring) 
+try
+	#remove file we write to if it exists
+	if isfile("test.txt")
+		rm("test.txt")
+	end
+	run(`$runexestring`)
+	io=open("test.txt","r");
+	Exists=readline(io)=="$desiredstring"
+	close(io)
+	return Exists
+catch
+	Exists=false
+	return Exists
+end
+end
 
+function SetupCGAL()
+error("Line 209 works but needs admin rights")
 ModuleDir=pathof(BuildCGAL);
 ModuleDir=splitdir(ModuleDir); #remove file name
 ModuleDir=ModuleDir[1];
@@ -37,7 +54,7 @@ if Sys.islinux()
 	addpath2=string(str1,"$CGALpath2")
 	run(`$addpath`)
 	run(`$addpath2`)
-	@everywhere push!(LOAD_PATH,"/path/to/my/code") #? try this instead - need to get the env var in there somehow
+	#@everywhere push!(LOAD_PATH,"/path/to/my/code") #? try this instead - need to get the env var in there somehow
 
 elseif Sys.iswindows()
 
@@ -48,25 +65,19 @@ elseif Sys.iswindows()
 	#MinGW mingw-w64\i686-7.3.0-posix-dwarf-rt_v5-rev0	
 	#https://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win32/Personal%20Builds/mingw-builds/installer/mingw-w64-install.exe/download
 	testgcc=split(raw"powershell gcc --version | out-file -Encoding ascii 'test.txt'")
-	run(`$testgcc`)
-	io=open("test.txt","r");
-	GccExists=readline(io)=="gcc.exe (i686-posix-dwarf-rev0, Built by MinGW-W64 project) 7.3.0"
-	close(io)
+	desiredstring="gcc.exe (i686-posix-dwarf-rev0, Built by MinGW-W64 project) 7.3.0"
+	(GccExists)=TryRunFromPowershell(testgcc,desiredstring)
 
 	#Make 3.81 http://gnuwin32.sourceforge.net/packages/make.htm
 	testmake=split(raw"powershell make --version | out-file -Encoding ascii 'test.txt'")
-	run(`$testmake`)
-	io=open("test.txt","r");	
-	MakeExists=readline(io)=="GNU Make 3.81"	
-	close(io)		
+	desiredstring="GNU Make 3.81"
+	(MakeExists)=TryRunFromPowershell(testmake,desiredstring)	
 
 	#CMake 3.14.1 https://github.com/Kitware/CMake/releases/download/v3.14.1/cmake-3.14.1-win64-x64.msi
 	testCmake=split(raw"powershell CMake --version | out-file -Encoding ascii 'test.txt'")
-	run(`$testCmake`)
-	io=open("test.txt","r");		
-	CMakeExists=readline(io)=="cmake version 3.14.1"
-	close(io)		
-	
+	desiredstring="cmake version 3.14.1"
+	(CMakeExists)=TryRunFromPowershell(testCmake,desiredstring)	
+
 	#Check paths of non callable objects:
 	#https://www.boost.org/doc/libs/1_70_0/more/getting_started/windows.html
 	BoostPathIsGood=Base.Filesystem.ispath(raw"C:\boost_1_70_0\bin.v2")
@@ -135,7 +146,7 @@ elseif Sys.iswindows()
 		
 
 		if MakeExists==false
-
+			println("Downloading Make")
 			#Download make:
 			SetSecurityProfile=(raw"powershell [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12")
 			Link2MakeExe="https://downloads.sourceforge.net/project/gnuwin32/make/3.81/make-3.81.exe"
@@ -148,7 +159,6 @@ elseif Sys.iswindows()
 			RunInstall=split("powershell ./make-3.81.exe /VERYSILENT /SUPPRESSMSGBOXES")
 			println("Unless you have admin privs you will get a dialog here from windows")
 			run(`$RunInstall`)
-			wait_for_key(prompt) = (print(stdout, prompt); read(stdin, 1); nothing)
 			wait_for_key("Finished with Dialog? press enter to continue...")
 
 
@@ -163,11 +173,12 @@ elseif Sys.iswindows()
 		end
 
 		if CMakeExists==false
-
+			println("Downloading CMake")
 			#Install CMAKE
 			#https://github.com/JuliaPackaging/CMake.jl/tree/5985636ac494ac2e22c19c282e54f65e7bbc7ad9
-			Pkg.add("CMake")
-			using CMake
+			io=open("cmakepath.txt","r");
+			cmake=readline(io) #path2 cmake
+			close(io)
 			println(cmake) #path of the cmake build
 			SetEnviromentVar=split("powershell [Environment]::SetEnvironmentVariable('PATH',")
 			cmakesplit=splitdir(cmake);
@@ -180,11 +191,11 @@ elseif Sys.iswindows()
 		end
 
 		if GccExists==false
-
+			println("Downloading Gcc")
 			#Download gcc64
 			SetSecurityProfile=(raw"powershell [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12")
 			Link2GccExe="https://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win32/Personal%20Builds/mingw-builds/installer/mingw-w64-install.exe/download"
-			DownloadFile=("Invoke-WebRequest -Uri $Link2GccExe -O make-3.81.exe -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox")
+			DownloadFile=("Invoke-WebRequest -Uri $Link2GccExe -O mingw-w64-install.exe -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox")
 			DownloadGcc=split(string(SetSecurityProfile,";",DownloadFile))
 			run(`$DownloadGcc`)
 			println("Downloaded mingw-w64-install.exe to $BuildDir")
@@ -193,25 +204,37 @@ elseif Sys.iswindows()
 			println("you will get a gcc dialog here - use defaults")
 			RunInstall=split("powershell ./mingw-w64-install.exe")
 			run(`$RunInstall`)
-			wait_for_key(prompt) = (print(stdout, prompt); read(stdin, 1); nothing)
 			wait_for_key("Finished with GCC Dialog? press enter to continue...")
 
+
 			#Set the Environment variables
+			GccBinPath=raw"C:\Program Files (x86)\mingw-w64\i686-8.1.0-posix-dwarf-rt_v6-rev0\mingw32\bin"
+			SetEnviromentVar=split("powershell ;")
+			SetEnviromentVar[end]="[Environment]::SetEnvironmentVariable("
+			P2="PATH"
+			P3=raw"$ENV"
+			P4=":PATH;"
+			P5="User"
+			SetEnviromentVar[end]=string(SetEnviromentVar[end],'"',P2,'"',',','"',P3,P4,"$GccBinPath",'"',',','"',P5,'"',')')
+			run(`$SetEnviromentVar`)
+
+
+
 			SetEnviromentVar=split("powershell [Environment]::SetEnvironmentVariable('PATH',")
-			MakeBinPath=raw"C:\MinGW\bin"
-			EndOfString=string(raw"'$ENV:PATH;","$MakeBinPath","'",",'User')")
+			GccBinPath2=raw"C:\Program Files (x86)\mingw-w64\i686-8.1.0-posix-dwarf-rt_v6-rev0\mingw32\opt\bin"
+			EndOfString=string(raw"'$ENV:PATH;","$GccBinPath2","'",",'User')")
 			SetEnviromentVar[end]=string(SetEnviromentVar[end],"$EndOfString")
 			SetEnviromentVar[end]=replace(SetEnviromentVar[end], "'" => '"') #Needs " not ' to work 
-			run(`$SetEnviromentVar`)
+			run(`$SetEnviromentVar`)			
 
 		end	
 
 		if BoostPathIsGood==false
-
+			println("Downloading Boost")
 			#Download boost files
 			SetSecurityProfile=(raw"powershell [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12")
 			Link2BoostFiles="https://dl.bintray.com/boostorg/release/1.68.0/source/boost_1_68_0.7z"
-			DownloadFile=("Invoke-WebRequest -Uri $Link2BoostFiles -O make-3.81.exe -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox")
+			DownloadFile=("Invoke-WebRequest -Uri $Link2BoostFiles -O boost_1_68_0.7z -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox")
 			DownloadBoost=split(string(SetSecurityProfile,";",DownloadFile))
 			run(`$DownloadBoost`)
 			println("Downloaded boost_1_68_0.7z to $BuildDir")
@@ -225,7 +248,6 @@ elseif Sys.iswindows()
 			cd("BoostDir")
 			CreateBoost1=split("powershell ./bootstrap.sh")
 			run(`$CreateBoost1`)
-			wait_for_key(prompt) = (print(stdout, prompt); read(stdin, 1); nothing)
 			wait_for_key("Wait for popup to finish, then press enter to continue...")			
 			CreateBoost2=split("powershell ./b2.exe toolset=gcc")
 			run(`$CreateBoost2`)
@@ -248,11 +270,11 @@ elseif Sys.iswindows()
 		end			
 
 		if CGALPathIsGood==false
-
+			println("Downloading CGAL")
 			#Download boost files
 			SetSecurityProfile=(raw"powershell [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12")
 			Link2CGAL="https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-4.13.1/CGAL-4.13.1-Setup.exe"
-			DownloadFile=("Invoke-WebRequest -Uri $Link2CGAL -O make-3.81.exe -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox")
+			DownloadFile=("Invoke-WebRequest -Uri $Link2CGAL -O CGAL-4.13.1-Setup.exe -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox")
 			DownloadCGAL=split(string(SetSecurityProfile,";",DownloadFile))
 			run(`$DownloadCGAL`)
 			println("Downloaded CGAL-4.13.1-Setup.exe to $BuildDir")
@@ -261,7 +283,6 @@ elseif Sys.iswindows()
 			println("you will get a CGAL dialog here - use defaults")
 			RunInstall=split("powershell ./CGAL-4.13.1-Setup.exe")
 			run(`$RunInstall`)
-			wait_for_key(prompt) = (print(stdout, prompt); read(stdin, 1); nothing)
 			wait_for_key("Finished with CGAL Dialog? press enter to continue...")
 
 			#Set the Environment variables
@@ -295,7 +316,9 @@ elseif Sys.isapple
 end
 
 
-rm("test.txt")#Remove output	
+if isfile("test.txt")
+	rm("test.txt")
+end
 
 end
 
