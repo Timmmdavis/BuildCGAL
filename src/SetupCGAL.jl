@@ -1,10 +1,43 @@
 function SetupCGAL()
 
+ModuleDir=pathof(BuildCGAL);
+ModuleDir=splitdir(ModuleDir); #remove file name
+ModuleDir=ModuleDir[1];
+ModuleDir=splitdir(ModuleDir); #out of src
+ModuleDir=ModuleDir[1];
+#upper directory
+CMakeListDir=string(ModuleDir,string("\\examples\\Advancing_front_surface_reconstruction\\")) 
+#where we will build out stuff
+BuildDir=string(ModuleDir,string("\\examples\\BuildDir\\")) 
+cd(BuildDir)
+
+
 if Sys.islinux()
 	#Check bits and call from thing
 
-	run(`sudo apt-get install libcgal-dev`)
 
+	error("Test this works")
+	#sudo apt-get install libcgal-dev #easy way -gets the deps too 
+	#run(`sudo apt-get install libcgal-dev`)
+	#sudo apt-get --purge remove libcgal-dev #remove old builds
+	run(`mkdir CGAL-4.13.1`)
+	cd(string(pwd(),"/CGAL-4.13.1"))
+	run(`wget https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-4.13.1/CGAL-4.13.1.tar.xz`)
+	run(`7z x CGAL-4.13.1.tar.xz`)
+	run(`7z x CGAL-4.13.1.tar`)
+	cd(string(pwd(),"/CGAL-4.13.1"))
+	run(`cmake .`)
+	run(`make`)
+
+	error("This bit doesnt work at the moment")
+	CGALpath1=string(ModuleDir,"/CGAL-4.13.1/CGAL-4.13.1")
+	CGALpath2=string(ModuleDir,"/CGAL-4.13.1/CGAL-4.13.1/aux/gmp/lib")
+	str1=raw"export PATH=${PATH}:"
+	addpath=string(str1,"$CGALpath1")
+	addpath2=string(str1,"$CGALpath2")
+	run(`$addpath`)
+	run(`$addpath2`)
+	@everywhere push!(LOAD_PATH,"/path/to/my/code") #? try this instead - need to get the env var in there somehow
 
 elseif Sys.iswindows()
 
@@ -42,16 +75,7 @@ elseif Sys.iswindows()
 
 
 
-	ModuleDir=pathof(BuildCGAL);
-	ModuleDir=splitdir(ModuleDir); #remove file name
-	ModuleDir=ModuleDir[1];
-	ModuleDir=splitdir(ModuleDir); #out of src
-	ModuleDir=ModuleDir[1];
-	#upper directory
-	CMakeListDir=string(ModuleDir,string("\\examples\\Advancing_front_surface_reconstruction\\")) 
-	#where we will build out stuff
-	BuildDir=string(ModuleDir,string("\\examples\\BuildDir\\")) 
-	cd(BuildDir)
+
 
 	#build scripts inside directory
 	if GccExists && MakeExists && CMakeExists && CGALPathIsGood && BoostPathIsGood
