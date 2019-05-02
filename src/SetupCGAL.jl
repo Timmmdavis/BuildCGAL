@@ -3,6 +3,9 @@ function SetupCGAL()
 if Sys.islinux()
 	#Check bits and call from thing
 
+	run(`sudo apt-get install libcgal-dev`)
+
+
 elseif Sys.iswindows()
 
 	#Check objects are callable (on path)
@@ -30,41 +33,42 @@ elseif Sys.iswindows()
 	io=open("test.txt","r");		
 	CMakeExists=readline(io)=="cmake version 3.14.1"
 	close(io)		
-	rm("test.txt")#Remove output		
-
-
+	
 	#Check paths of non callable objects:
-	#CGAL 4.13.1 https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-4.13.1/CGAL-4.13.1-Setup.exe
-	CGALPathIsGood=Base.Filesystem.ispath(raw"C:\dev\CGAL-4.13.1")
 	#https://www.boost.org/doc/libs/1_70_0/more/getting_started/windows.html
 	BoostPathIsGood=Base.Filesystem.ispath(raw"C:\boost_1_70_0\bin.v2")
+	#CGAL 4.13.1 https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-4.13.1/CGAL-4.13.1-Setup.exe
+	CGALPathIsGood=Base.Filesystem.ispath(raw"C:\dev\CGAL-4.13.1")
+
+
+
+	ModuleDir=pathof(BuildCGAL);
+	ModuleDir=splitdir(ModuleDir); #remove file name
+	ModuleDir=ModuleDir[1];
+	ModuleDir=splitdir(ModuleDir); #out of src
+	ModuleDir=ModuleDir[1];
+	#upper directory
+	CMakeListDir=string(ModuleDir,string("\\examples\\Advancing_front_surface_reconstruction\\")) 
+	#where we will build out stuff
+	BuildDir=string(ModuleDir,string("\\examples\\BuildDir\\")) 
+	cd(BuildDir)
 
 	#build scripts inside directory
 	if GccExists && MakeExists && CMakeExists && CGALPathIsGood && BoostPathIsGood
 		println("Dependancies have been met, attempting to run build")
 
 
-		println("Would be good to functionise parts below:")
-
-		ModuleDir=pathof(BuildCGAL);
-		ModuleDir=splitdir(ModuleDir); #remove file name
-		ModuleDir=ModuleDir[1];
-		ModuleDir=splitdir(ModuleDir); #out of src
-		ModuleDir=ModuleDir[1];
-		#upper directory
-		CMakeListDir=string(ModuleDir,string("\\examples\\Advancing_front_surface_reconstruction\\")) 
-		#where we will build out stuff
-		BuildDir=string(ModuleDir,string("\\examples\\BuildDir\\")) 
-		cd(BuildDir)
-
-
 		println("Check .exes dont already exist (i.e. already run)")
 		if isfile("boundaries.exe") && isfile("reconstruction_class.exe") && 
-		isfile("reconstruction_fct.exe") && isfile("reconstruction_structured.exe") &&
-		isfile("reconstruction_surface_mesh.exe")
+			isfile("reconstruction_fct.exe") && isfile("reconstruction_structured.exe") &&
+			isfile("reconstruction_surface_mesh.exe")
 			println("exe's already pre-built, skipping build")
 
 		else
+
+
+			println("Would be good to functionise parts below:")
+
 			println("Begin build")
 			str1="powershell cmake . -B$BuildDir -H$CMakeListDir -G 'MinGW Makefiles'"
 			strfnt="-D "
@@ -93,7 +97,169 @@ elseif Sys.iswindows()
 
 	else
 
-		println("read and follow 'Getting Gcal working on Windows.md' to link deps before proceeding")
+		#test FireFox is installed so we can download:
+		QueryFireFox=split(raw"powershell Test-Path 'HKLM:\SOFTWARE\Mozilla\Mozilla Firefox' | out-file -Encoding ascii 'test.txt'")
+		run(`$QueryFireFox`)
+		io=open("test.txt","r");		
+		FirefoxExists=readline(io)=="True"
+		if FirefoxExists==false
+			error("install Firefox")
+		end
+
+		#Setting a variable in powershell:
+		#Set-Variable -Name "LinkLoc" -Value "https://downloads.sourceforge.net/project/gnuwin32/make/3.81/make-3.81.exe"
+		
+
+		if MakeExists==false
+
+			#Download make:
+			SetSecurityProfile=(raw"powershell [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12")
+			Link2MakeExe="https://downloads.sourceforge.net/project/gnuwin32/make/3.81/make-3.81.exe"
+			DownloadFile=("Invoke-WebRequest -Uri $Link2MakeExe -O make-3.81.exe -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox")
+			DownloadMake=split(string(SetSecurityProfile,";",DownloadFile))
+			run(`$DownloadMake`)
+			println("Downloaded make-3.81.exe to $BuildDir")
+			
+			#Make should now be downloaded in current folder - now we install it
+			RunInstall=split("powershell ./make-3.81.exe /VERYSILENT /SUPPRESSMSGBOXES")
+			println("Unless you have admin privs you will get a dialog here from windows")
+			run(`$RunInstall`)
+			wait_for_key(prompt) = (print(stdout, prompt); read(stdin, 1); nothing)
+			wait_for_key("Finished with Dialog? press enter to continue...")
+
+
+			#Set the Environment variables
+			SetEnviromentVar=split("powershell [Environment]::SetEnvironmentVariable('PATH',")
+			MakeBinPath=raw"C:\Program Files (x86)\GnuWin32\bin"
+			EndOfString=string(raw"'$ENV:PATH;","$MakeBinPath","'",",'User')")
+			SetEnviromentVar[end]=string(SetEnviromentVar[end],"$EndOfString")
+			SetEnviromentVar[end]=replace(SetEnviromentVar[end], "'" => '"') #Needs " not ' to work 
+			run(`$SetEnviromentVar`)
+
+		end
+
+		if CMakeExists==false
+
+			#Install CMAKE
+			#https://github.com/JuliaPackaging/CMake.jl/tree/5985636ac494ac2e22c19c282e54f65e7bbc7ad9
+			Pkg.add("CMake")
+			using CMake
+			println(cmake) #path of the cmake build
+			SetEnviromentVar=split("powershell [Environment]::SetEnvironmentVariable('PATH',")
+			cmakesplit=splitdir(cmake);
+			CMakeBinPath=cmakesplit[1]
+			EndOfString=string(raw"'$ENV:PATH;","$CMakeBinPath","'",",'User')")
+			SetEnviromentVar[end]=string(SetEnviromentVar[end],"$EndOfString")
+			SetEnviromentVar[end]=replace(SetEnviromentVar[end], "'" => '"') #Needs " not ' to work 
+			run(`$SetEnviromentVar`)
+
+		end
+
+		if GccExists==false
+
+			#Download gcc64
+			SetSecurityProfile=(raw"powershell [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12")
+			Link2GccExe="https://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win32/Personal%20Builds/mingw-builds/installer/mingw-w64-install.exe/download"
+			DownloadFile=("Invoke-WebRequest -Uri $Link2GccExe -O make-3.81.exe -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox")
+			DownloadGcc=split(string(SetSecurityProfile,";",DownloadFile))
+			run(`$DownloadGcc`)
+			println("Downloaded mingw-w64-install.exe to $BuildDir")
+
+			#gcc64 should now be downloaded in current folder - now we install it
+			println("you will get a gcc dialog here - use defaults")
+			RunInstall=split("powershell ./mingw-w64-install.exe")
+			run(`$RunInstall`)
+			wait_for_key(prompt) = (print(stdout, prompt); read(stdin, 1); nothing)
+			wait_for_key("Finished with GCC Dialog? press enter to continue...")
+
+			#Set the Environment variables
+			SetEnviromentVar=split("powershell [Environment]::SetEnvironmentVariable('PATH',")
+			MakeBinPath=raw"C:\MinGW\bin"
+			EndOfString=string(raw"'$ENV:PATH;","$MakeBinPath","'",",'User')")
+			SetEnviromentVar[end]=string(SetEnviromentVar[end],"$EndOfString")
+			SetEnviromentVar[end]=replace(SetEnviromentVar[end], "'" => '"') #Needs " not ' to work 
+			run(`$SetEnviromentVar`)
+
+		end	
+
+		if BoostPathIsGood==false
+
+			#Download boost files
+			SetSecurityProfile=(raw"powershell [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12")
+			Link2BoostFiles="https://dl.bintray.com/boostorg/release/1.68.0/source/boost_1_68_0.7z"
+			DownloadFile=("Invoke-WebRequest -Uri $Link2BoostFiles -O make-3.81.exe -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox")
+			DownloadBoost=split(string(SetSecurityProfile,";",DownloadFile))
+			run(`$DownloadBoost`)
+			println("Downloaded boost_1_68_0.7z to $BuildDir")
+
+			#7z should be on path (comes with julia)
+			ExtractBoost=split(raw"powershell 7z x .\boost_1_70_0.zip -oboost_1_70_0")
+			run(`$ExtractBoost`)
+
+			#Now build it 
+			BoostDir=string(ModuleDir,string("\\boost_1_70_0\\boost_1_70_0\\")) 
+			cd("BoostDir")
+			CreateBoost1=split("powershell ./bootstrap.sh")
+			run(`$CreateBoost1`)
+			wait_for_key(prompt) = (print(stdout, prompt); read(stdin, 1); nothing)
+			wait_for_key("Wait for popup to finish, then press enter to continue...")			
+			CreateBoost2=split("powershell ./b2.exe toolset=gcc")
+			run(`$CreateBoost2`)
+			cd("BuildDir")
+
+			#Set the Environment variables
+			SetEnviromentVar=split("powershell [Environment]::SetEnvironmentVariable('PATH',")
+			BoostPath=raw"C:\boost_1_70_0"
+			EndOfString=string(raw"'$ENV:PATH;","$BoostPath","'",",'User')")
+			SetEnviromentVar[end]=string(SetEnviromentVar[end],"$EndOfString")
+			SetEnviromentVar[end]=replace(SetEnviromentVar[end], "'" => '"') #Needs " not ' to work 
+			run(`$SetEnviromentVar`)
+			SetEnviromentVar=split("powershell [Environment]::SetEnvironmentVariable('PATH',")
+			BoostPath2=raw"C:\boost_1_70_0\bin.v2"
+			EndOfString=string(raw"'$ENV:PATH;","$BoostPath2","'",",'User')")
+			SetEnviromentVar[end]=string(SetEnviromentVar[end],"$EndOfString")
+			SetEnviromentVar[end]=replace(SetEnviromentVar[end], "'" => '"') #Needs " not ' to work 
+			run(`$SetEnviromentVar`)
+
+		end			
+
+		if CGALPathIsGood==false
+
+			#Download boost files
+			SetSecurityProfile=(raw"powershell [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12")
+			Link2CGAL="https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-4.13.1/CGAL-4.13.1-Setup.exe"
+			DownloadFile=("Invoke-WebRequest -Uri $Link2CGAL -O make-3.81.exe -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox")
+			DownloadCGAL=split(string(SetSecurityProfile,";",DownloadFile))
+			run(`$DownloadCGAL`)
+			println("Downloaded CGAL-4.13.1-Setup.exe to $BuildDir")
+
+			#gcc64 should now be downloaded in current folder - now we install it
+			println("you will get a CGAL dialog here - use defaults")
+			RunInstall=split("powershell ./CGAL-4.13.1-Setup.exe")
+			run(`$RunInstall`)
+			wait_for_key(prompt) = (print(stdout, prompt); read(stdin, 1); nothing)
+			wait_for_key("Finished with CGAL Dialog? press enter to continue...")
+
+			#Set the Environment variables
+			SetEnviromentVar=split("powershell [Environment]::SetEnvironmentVariable('PATH',")
+			CGALPath=raw"C:\dev\CGAL-4.13.1"
+			EndOfString=string(raw"'$ENV:PATH;","$CGALPath","'",",'User')")
+			SetEnviromentVar[end]=string(SetEnviromentVar[end],"$EndOfString")
+			SetEnviromentVar[end]=replace(SetEnviromentVar[end], "'" => '"') #Needs " not ' to work 
+			run(`$SetEnviromentVar`)
+			SetEnviromentVar=split("powershell [Environment]::SetEnvironmentVariable('PATH',")
+			CGALPath2=raw"C:\dev\CGAL-4.13.1\auxiliary\gmp\lib"
+			EndOfString=string(raw"'$ENV:PATH;","$CGALPath2","'",",'User')")
+			SetEnviromentVar[end]=string(SetEnviromentVar[end],"$EndOfString")
+			SetEnviromentVar[end]=replace(SetEnviromentVar[end], "'" => '"') #Needs " not ' to work 
+			run(`$SetEnviromentVar`)
+
+
+		end				
+
+
+
+		println("Deps etc should now be installed - rerun SetupCGAL")
 		#install each dependancy as we go
 		#catch errors and report
 		#ask user to rerun after these have been met
@@ -104,6 +270,8 @@ elseif Sys.isapple
 	error("Not supported, check linux implementation?")
 end
 
+
+rm("test.txt")#Remove output	
 
 end
 
