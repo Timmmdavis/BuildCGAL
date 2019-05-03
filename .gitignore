@@ -1,0 +1,5 @@
+# exclude everything
+examples/BuildDir/*
+
+# exception to the rule
+!examples/BuildDir/.gitkeep 
