@@ -4,6 +4,14 @@ function test4deps()
 #Call shell script that checks exe is callable and the version and writes to a txt file 
 #we then read file and check if its the right version
 
+#7zip
+testgcc=split(raw"powershell 7z -version | out-file -Encoding ascii 'test.txt'")
+desiredstring=""
+(SevenZipExists)=TryRunFromPowershell(testgcc,desiredstring)
+if SevenZipExists==false
+	error("create path enviroment var that points to the 7zip installation in julias bin dir")
+end
+
 #MinGW mingw-w64\i686-7.3.0-posix-dwarf-rt_v5-rev0	
 #https://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win32/Personal%20Builds/mingw-builds/installer/mingw-w64-install.exe/download
 testgcc=split(raw"powershell gcc --version | out-file -Encoding ascii 'test.txt'")
@@ -17,7 +25,7 @@ desiredstring="GNU Make 3.81"
 
 #CMake 3.14.1 https://github.com/Kitware/CMake/releases/download/v3.14.1/cmake-3.14.1-win64-x64.msi
 testCmake=split(raw"powershell CMake --version | out-file -Encoding ascii 'test.txt'")
-desiredstring="cmake version 3.14.1"
+desiredstring="cmake version 3.12.3"
 (CMakeExists)=TryRunFromPowershell(testCmake,desiredstring)	
 
 #Check paths of non callable objects:

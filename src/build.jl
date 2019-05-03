@@ -1,29 +1,4 @@
-#build.jl - define function first
-function SetEnviromentVarWindows(BinPath)
-	#bin path being somthing like :GccBinPath=raw"C:\Program Files (x86)\mingw-w64\i686-8.1.0-posix-dwarf-rt_v6-rev0\mingw32\bin"
 
-	#first check the directory actually exists:
-	TestPath=split("powershell ;")
-	TestPath[end]=string("Test-Path -Path '","$BinPath","'"," | out-file -Encoding ascii 'test.txt'")
-	run(`$TestPath`)
-	io=open("test.txt","r");
-	PathExists=readline(io)=="True"
-	close(io)
-	if PathExists==false
-		error("Did you install to the default install directory? Tried to add path $BinPath but it doesnt exist")
-	end
-
-	#then add the env var
-	SetEnviromentVar=split("powershell ;")
-	SetEnviromentVar[end]="[Environment]::SetEnvironmentVariable("
-	P2="PATH"
-	P3=raw"$ENV"
-	P4=":PATH;"
-	P5="User"
-	SetEnviromentVar[end]=string(SetEnviromentVar[end],'"',P2,'"',',','"',P3,P4,"$BinPath",'"',',','"',P5,'"',')')
-	println(SetEnviromentVar[end]) #actual cmd
-	run(`$SetEnviromentVar`)
-end
 
 
 #Run build process
@@ -39,9 +14,6 @@ CMakeListDir=string(ModuleDir,string("\\examples\\Advancing_front_surface_recons
 #where we will build out stuff
 BuildDir=string(ModuleDir,string("\\examples\\BuildDir\\")) 
 cd(BuildDir)
-
-
-
 
 if Sys.islinux()
 	#Check bits and call from thing
@@ -105,25 +77,30 @@ elseif Sys.iswindows()
 		
 
 		if MakeExists==false
-			println("Downloading Make")
-			#Download make:
-			SetSecurityProfile=(raw"powershell [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12")
-			Link2MakeExe="https://downloads.sourceforge.net/project/gnuwin32/make/3.81/make-3.81.exe"
-			DownloadFile=("Invoke-WebRequest -Uri $Link2MakeExe -O make-3.81.exe -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox")
-			DownloadMake=split(string(SetSecurityProfile,";",DownloadFile))
-			run(`$DownloadMake`)
-			println("Downloaded make-3.81.exe to $BuildDir")
-			
+
+			if isfile("make-3.81.exe")==false
+				println("Downloading Make")
+				#Download make:
+				SetSecurityProfile=(raw"powershell [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12")
+				Link2MakeExe="https://downloads.sourceforge.net/project/gnuwin32/make/3.81/make-3.81.exe"
+				DownloadFile=("Invoke-WebRequest -Uri $Link2MakeExe -O make-3.81.exe -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox")
+				DownloadMake=split(string(SetSecurityProfile,";",DownloadFile))
+				run(`$DownloadMake`)
+				println("Downloaded make-3.81.exe to $BuildDir")
+			end
+
 			#Make should now be downloaded in current folder - now we install it
 			RunInstall=split("powershell ./make-3.81.exe /VERYSILENT /SUPPRESSMSGBOXES")
 			println("Unless you have admin privs you will get a dialog here from windows")
 			run(`$RunInstall`)
-			wait_for_key("Finished with Dialog? press enter to continue...")
+			BuildCGAL.wait_for_key("Finished with Dialog? press enter to continue...")
 
-
+			println("Sleeping for 10")
+			sleep(10)
+			
 			#Set the Environment variables
 			MakeBinPath=raw"C:\Program Files (x86)\GnuWin32\bin"
-			SetEnviromentVarWindows(MakeBinPath)
+			BuildCGAL.SetEnviromentVarWindows(MakeBinPath)
 
 		end
 
@@ -138,87 +115,113 @@ elseif Sys.iswindows()
 			#remove the actual .exe tag on the end (we just want the bin path not the file)
 			cmakesplit=splitdir(cmake);
 			CMakeBinPath=cmakesplit[1] 
-			SetEnviromentVarWindows(CMakeBinPath)	
+			BuildCGAL.SetEnviromentVarWindows(CMakeBinPath)	
 
 		end
 
 		if GccExists==false
-			println("Downloading Gcc")
-			#Download gcc64
-			SetSecurityProfile=(raw"powershell [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12")
-			Link2GccExe="https://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win32/Personal%20Builds/mingw-builds/installer/mingw-w64-install.exe/download"
-			DownloadFile=("Invoke-WebRequest -Uri $Link2GccExe -O mingw-w64-install.exe -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox")
-			DownloadGcc=split(string(SetSecurityProfile,";",DownloadFile))
-			run(`$DownloadGcc`)
-			println("Downloaded mingw-w64-install.exe to $BuildDir")
+
+			if isfile("mingw-w64-install.exe")==false
+				println("Downloading Gcc")
+				#Download gcc64
+				SetSecurityProfile=(raw"powershell [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12")
+				Link2GccExe="https://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win32/Personal%20Builds/mingw-builds/installer/mingw-w64-install.exe/download"
+				DownloadFile=("Invoke-WebRequest -Uri $Link2GccExe -O mingw-w64-install.exe -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox")
+				DownloadGcc=split(string(SetSecurityProfile,";",DownloadFile))
+				run(`$DownloadGcc`)
+				println("Downloaded mingw-w64-install.exe to $BuildDir")
+			end
 
 			#gcc64 should now be downloaded in current folder - now we install it
 			println("you will get a gcc dialog here - use defaults")
 			RunInstall=split("powershell ./mingw-w64-install.exe")
 			run(`$RunInstall`)
-			wait_for_key("Finished with GCC Dialog? press enter to continue...")
+			BuildCGAL.wait_for_key("Finished with GCC Dialog? type a key, delete it, press enter to continue...")
+			
+			println("Sleeping for 10")
+			sleep(10)
 
 			#Set the Environment variables
 			GccBinPath=raw"C:\Program Files (x86)\mingw-w64\i686-8.1.0-posix-dwarf-rt_v6-rev0\mingw32\bin"
-			SetEnviromentVarWindows(GccBinPath)
+			BuildCGAL.SetEnviromentVarWindows(GccBinPath)
 			GccBinPath2=raw"C:\Program Files (x86)\mingw-w64\i686-8.1.0-posix-dwarf-rt_v6-rev0\mingw32\opt\bin"
-			SetEnviromentVarWindows(GccBinPath2)	
+			BuildCGAL.SetEnviromentVarWindows(GccBinPath2)	
+			
+
+
 
 		end	
 
 		if BoostPathIsGood==false
-			println("Downloading Boost")
-			#Download boost files
-			SetSecurityProfile=(raw"powershell [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12")
-			Link2BoostFiles="https://dl.bintray.com/boostorg/release/1.68.0/source/boost_1_68_0.7z"
-			DownloadFile=("Invoke-WebRequest -Uri $Link2BoostFiles -O boost_1_68_0.7z -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox")
-			DownloadBoost=split(string(SetSecurityProfile,";",DownloadFile))
-			run(`$DownloadBoost`)
-			println("Downloaded boost_1_68_0.7z to $BuildDir")
+
+			if isfile("boost_1_70_0.zip")==false
+				println("Downloading Boost")
+				#Download boost files
+				SetSecurityProfile=(raw"powershell [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12")
+				Link2BoostFiles="https://dl.bintray.com/boostorg/release/1.70.0/source/boost_1_70_0.zip"
+				DownloadFile=("Invoke-WebRequest -Uri $Link2BoostFiles -O boost_1_70_0.zip -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox")
+				DownloadBoost=split(string(SetSecurityProfile,";",DownloadFile))
+				run(`$DownloadBoost`)
+				println("Downloaded boost_1_70_0.zip to $BuildDir")
+			end
 
 			#7z should be on path (comes with julia)
 			ExtractBoost=split(raw"powershell 7z x .\boost_1_70_0.zip -oboost_1_70_0")
 			run(`$ExtractBoost`)
 
 			#Now build it 
-			BoostDir=string(ModuleDir,string("\\boost_1_70_0\\boost_1_70_0\\")) 
-			cd("BoostDir")
-			CreateBoost1=split("powershell ./bootstrap.sh")
+			BoostDir=string(pwd(),string("\\boost_1_70_0\\boost_1_70_0\\")) 
+			cd("$BoostDir")
+			CreateBoost1=split("powershell ./bootstrap.bat")
 			run(`$CreateBoost1`)
-			wait_for_key("Wait for popup to finish, then press enter to continue...")			
+			BuildCGAL.wait_for_key("Wait for popup to finish, then press enter to continue...")		
+
+			println("Sleeping for 10")
+			sleep(10)
+
 			CreateBoost2=split("powershell ./b2.exe toolset=gcc")
 			run(`$CreateBoost2`)
-			cd("BuildDir")
+			
+			println("Sleeping for 10")
+			sleep(10)
+
+			cd("$BuildDir")
 
 			#Set the Environment variables
 			BoostPath=raw"C:\boost_1_70_0"
-			SetEnviromentVarWindows(BoostPath)
+			BuildCGAL.SetEnviromentVarWindows(BoostPath)
 			BoostPath2=raw"C:\boost_1_70_0\bin.v2"
-			SetEnviromentVarWindows(BoostPath2)	
+			BuildCGAL.SetEnviromentVarWindows(BoostPath2)	
 
 		end			
 
 		if CGALPathIsGood==false
-			println("Downloading CGAL")
-			#Download boost files
-			SetSecurityProfile=(raw"powershell [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12")
-			Link2CGAL="https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-4.13.1/CGAL-4.13.1-Setup.exe"
-			DownloadFile=("Invoke-WebRequest -Uri $Link2CGAL -O CGAL-4.13.1-Setup.exe -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox")
-			DownloadCGAL=split(string(SetSecurityProfile,";",DownloadFile))
-			run(`$DownloadCGAL`)
-			println("Downloaded CGAL-4.13.1-Setup.exe to $BuildDir")
+
+			if isfile("CGAL-4.13.1-Setup.exe")==false
+				println("Downloading CGAL")
+				#Download boost files
+				SetSecurityProfile=(raw"powershell [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12")
+				Link2CGAL="https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-4.13.1/CGAL-4.13.1-Setup.exe"
+				DownloadFile=("Invoke-WebRequest -Uri $Link2CGAL -O CGAL-4.13.1-Setup.exe -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox")
+				DownloadCGAL=split(string(SetSecurityProfile,";",DownloadFile))
+				run(`$DownloadCGAL`)
+				println("Downloaded CGAL-4.13.1-Setup.exe to $BuildDir")
+			end
 
 			#gcc64 should now be downloaded in current folder - now we install it
 			println("you will get a CGAL dialog here - use defaults")
 			RunInstall=split("powershell ./CGAL-4.13.1-Setup.exe")
 			run(`$RunInstall`)
-			wait_for_key("Finished with CGAL Dialog? press enter to continue...")
+			BuildCGAL.wait_for_key("Finished with CGAL Dialog? press enter to continue...")
+			
+			println("Sleeping for 10")
+			pause(10)
 
 			#Set the Environment variable
 			CGALPath=raw"C:\dev\CGAL-4.13.1"
-			SetEnviromentVarWindows(CGALPath)
+			BuildCGAL.SetEnviromentVarWindows(CGALPath)
 			CGALPath2=raw"C:\dev\CGAL-4.13.1\auxiliary\gmp\lib"
-			SetEnviromentVarWindows(CGALPath2)	#Set the Environment variables
+			BuildCGAL.SetEnviromentVarWindows(CGALPath2)	#Set the Environment variables
 
 		end				
 

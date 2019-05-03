@@ -68,7 +68,7 @@ elseif Sys.iswindows()
 
 	else
 
-		error("Requires dependencies that you dont have installed, run 'build.jl' \n make sure you have firefox installed and use admin rights")
+		error("Requires dependencies that you dont have installed, run include-build.jl \n make sure you have firefox installed and use admin rights")
 
 	end
 
