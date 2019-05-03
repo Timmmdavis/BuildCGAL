@@ -8,9 +8,9 @@ function test4deps()
 testgcc=split(raw"powershell 7z -version | out-file -Encoding ascii 'test.txt'")
 desiredstring=""
 (SevenZipExists)=TryRunFromPowershell(testgcc,desiredstring)
-if SevenZipExists==false
-	error("create path enviroment var that points to the 7zip installation in julias bin dir")
-end
+#if SevenZipExists==false
+#	error("create path enviroment var that points to the 7zip installation in julias bin dir")
+#end
 
 #MinGW mingw-w64\i686-7.3.0-posix-dwarf-rt_v5-rev0	
 #https://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win32/Personal%20Builds/mingw-builds/installer/mingw-w64-install.exe/download

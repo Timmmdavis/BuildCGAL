@@ -151,7 +151,7 @@ elseif Sys.iswindows()
 
 
 		end	
-
+		
 		if BoostPathIsGood==false
 
 			if isfile("boost_1_70_0.zip")==false
@@ -166,14 +166,15 @@ elseif Sys.iswindows()
 			end
 
 			#7z should be on path (comes with julia)
-			ExtractBoost=split(raw"powershell 7z x .\boost_1_70_0.zip -oboost_1_70_0")
+			ExtractBoost=split(raw"powershell 7z x .\boost_1_70_0.zip -oC:\\")
 			run(`$ExtractBoost`)
 
 			#Now build it 
-			BoostDir=string(pwd(),string("\\boost_1_70_0\\boost_1_70_0\\")) 
+			BoostDir="C:\\boost_1_70_0"
 			cd("$BoostDir")
 			CreateBoost1=split("powershell ./bootstrap.bat")
 			run(`$CreateBoost1`)
+
 			BuildCGAL.wait_for_key("Wait for popup to finish, then press enter to continue...")		
 
 			println("Sleeping for 10")
@@ -189,11 +190,12 @@ elseif Sys.iswindows()
 
 			#Set the Environment variables
 			BoostPath=raw"C:\boost_1_70_0"
-			BuildCGAL.SetEnviromentVarWindows(BoostPath)
+			BuildCGAL.SetEnviromentVarWindows(BoostPath)		
 			BoostPath2=raw"C:\boost_1_70_0\bin.v2"
 			BuildCGAL.SetEnviromentVarWindows(BoostPath2)	
 
 		end			
+		
 
 		if CGALPathIsGood==false
 
@@ -215,12 +217,12 @@ elseif Sys.iswindows()
 			BuildCGAL.wait_for_key("Finished with CGAL Dialog? press enter to continue...")
 			
 			println("Sleeping for 10")
-			pause(10)
+			sleep(10)
 
 			#Set the Environment variable
-			CGALPath=raw"C:\dev\CGAL-4.13.1"
+			CGALPath=raw"C:\dev\CGAL-4.13.1\"
 			BuildCGAL.SetEnviromentVarWindows(CGALPath)
-			CGALPath2=raw"C:\dev\CGAL-4.13.1\auxiliary\gmp\lib"
+			CGALPath2=raw"C:\dev\CGAL-4.13.1\auxiliary\gmp\lib\"
 			BuildCGAL.SetEnviromentVarWindows(CGALPath2)	#Set the Environment variables
 
 		end				

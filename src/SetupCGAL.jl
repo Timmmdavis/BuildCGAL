@@ -24,7 +24,7 @@ elseif Sys.iswindows()
 	(GccExists,MakeExists,CMakeExists,BoostPathIsGood,CGALPathIsGood)=test4deps()
 
 	#build scripts inside directory
-	if GccExists && MakeExists && CMakeExists && CGALPathIsGood && BoostPathIsGood
+	#if GccExists && MakeExists && CMakeExists && CGALPathIsGood && BoostPathIsGood
 		println("Dependancies have been met, attempting to run build")
 
 
@@ -42,12 +42,12 @@ elseif Sys.iswindows()
 
 			println("Begin build")
 			str1="powershell cmake . -B$BuildDir -H$CMakeListDir -G 'MinGW Makefiles'"
-			strfnt="-D "
-			str2="'CMAKE_BUILD_TYPE=Release'"
-			str3=raw"GMP_INCLUDE_DIR=C:/dev/CGAL-4.13.1/auxiliary/gmp/include "
+			strfnt="-D"
+			str2="'CMAKE_BUILD_TYPE=Release'"	
+			str3=raw"GMP_INCLUDE_DIR=C:/dev/CGAL-4.13.1/auxiliary/gmp/include/ "
 			str4=raw"GMP_LIBRARIES=C:/dev/CGAL-4.13.1/auxiliary/gmp/lib/libgmp-10.dll "
-			str5=raw"GMP_LIBRARIES_DIR=C:/dev/CGAL-4.13.1/auxiliary/gmp/lib " 
-			str6=raw"MPFR_INCLUDE_DIR=C:/dev/CGAL-4.13.1/auxiliary/gmp/include "
+			str5=raw"GMP_LIBRARIES_DIR=C:/dev/CGAL-4.13.1/auxiliary/gmp/lib/ " 
+			str6=raw"MPFR_INCLUDE_DIR=C:/dev/CGAL-4.13.1/auxiliary/gmp/include/ "
 			str7=raw"MPFR_LIBRARIES=C:/dev/CGAL-4.13.1/auxiliary/gmp/lib/libmpfr-4.dll "
 			str8=raw"MPFR_LIBRARIES_DIR=C:/dev/CGAL-4.13.1/auxiliary/gmp/lib " 
 			RunCMake=string(str1,strfnt,str2,strfnt,str3,strfnt,str4,strfnt,str5,strfnt,str6,strfnt,str7,strfnt,str8)
@@ -66,11 +66,11 @@ elseif Sys.iswindows()
 
 		#now run and test...
 
-	else
+	#else
 
-		error("Requires dependencies that you dont have installed, run include-build.jl \n make sure you have firefox installed and use admin rights")
+	#	error("Requires dependencies that you dont have installed, run include-build.jl \n make sure you have firefox installed and use admin rights")
 
-	end
+	#end
 
 
 elseif Sys.isapple
