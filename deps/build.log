@@ -1,0 +1,8 @@
+┌ Info: 1
+│   GccExists = true
+│   MakeExists = true
+│   CMakeExists = true
+│   BoostPathIsGood = true
+└   CGALPathIsGood = true
+deps have been installed already - just run BuildCGAL.SetupCGAL()
+Deps etc should now be installed - restart julia then rerun SetupCGAL
