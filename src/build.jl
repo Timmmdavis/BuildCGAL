@@ -147,8 +147,8 @@ elseif Sys.iswindows()
 			GccBinPath2=raw"C:\Program Files (x86)\mingw-w64\i686-8.1.0-posix-dwarf-rt_v6-rev0\mingw32\opt\bin"
 			BuildCGAL.SetEnviromentVarWindows(GccBinPath2)	
 			
-
-
+			println("When you call 'gcc --version' from powershell it must be gcc.exe (i686-posix-dwarf-rev0, Built by MinGW-W64 project) 8.1.0 this one! set this test up")
+			BuildCGAL.wait_for_key("Checked? press enter to continue...")
 
 		end	
 		
@@ -172,7 +172,7 @@ elseif Sys.iswindows()
 			#Now build it 
 			BoostDir="C:\\boost_1_70_0"
 			cd("$BoostDir")
-			CreateBoost1=split("powershell ./bootstrap.bat")
+			CreateBoost1=split("powershell ./bootstrap.bat gcc")
 			run(`$CreateBoost1`)
 
 			BuildCGAL.wait_for_key("Wait for popup to finish, then press enter to continue...")		
@@ -211,7 +211,7 @@ elseif Sys.iswindows()
 			end
 
 			#gcc64 should now be downloaded in current folder - now we install it
-			println("you will get a CGAL dialog here - use defaults")
+			println("you will get a CGAL dialog here - use defaults 32BIT")
 			RunInstall=split("powershell ./CGAL-4.13.1-Setup.exe")
 			run(`$RunInstall`)
 			BuildCGAL.wait_for_key("Finished with CGAL Dialog? press enter to continue...")
