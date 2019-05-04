@@ -220,9 +220,9 @@ elseif Sys.iswindows()
 			sleep(10)
 
 			#Set the Environment variable
-			CGALPath=raw"C:\dev\CGAL-4.13.1\"
+			CGALPath=raw"C:\dev\CGAL-4.13.1"
 			BuildCGAL.SetEnviromentVarWindows(CGALPath)
-			CGALPath2=raw"C:\dev\CGAL-4.13.1\auxiliary\gmp\lib\"
+			CGALPath2=raw"C:\dev\CGAL-4.13.1\auxiliary\gmp\lib"
 			BuildCGAL.SetEnviromentVarWindows(CGALPath2)	#Set the Environment variables
 
 		end				
