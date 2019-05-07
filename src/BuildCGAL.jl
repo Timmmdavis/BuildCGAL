@@ -1,14 +1,13 @@
 module BuildCGAL
 using CMake
 
-ModuleDir=pathof(BuildCGAL);
-ModuleDir=splitdir(ModuleDir); #remove file name
-ModuleDir=ModuleDir[1];
-ModuleDir=splitdir(ModuleDir); #out of src
-ModuleDir=ModuleDir[1];
 #where we will build out stuff
-BuildDir=string(ModuleDir,string("\\examples\\BuildDir\\")) 
-cd(BuildDir)
+BuildDir=string(splitdir(splitdir(pathof(BuildCGAL))[1])[1],string("\\examples\\BuildDir\\")) 
+
+try cd(BuildDir)
+catch
+	("Build directory at $BuildDir  doesnt exist, create this")
+end
 
 
 
@@ -20,6 +19,9 @@ wait_for_key(prompt) = (print(stdout, prompt); read(stdin, 1); nothing)
 include("SetupCGAL.jl")
 include("test4deps.jl")
 include("SetEnviromentVarWindows.jl")
+include("AdvancingFrontCGAL.jl")
+include("PolygonRemeshingCGAL.jl")
+
 
 import CMake
 #export cmake dir as text file

@@ -17,6 +17,10 @@ https://doc.cgal.org/latest/Advancing_front_surface_reconstruction/index.html#ti
 
 #For example in: /Desktop/examples/Advancing_front_surface_reconstruction$ 
 ./reconstruction_surface_mesh data/YourFileName.xyz > output.off #OFF file https://en.wikipedia.org/wiki/OFF_(file_format)
+
+windows:
+./isotropic_remeshing_example "C:\Users\timmm\.julia\packages\BuildCGAL\E7q8G\examples\Polygon_mesh_processing\data\pig.off" 0.1  | out-file -Encoding ascii "out.off"
+
 #This is based on the input half.xyz text file in /Advancing_front_surface_reconstruction/data
 #You can always change the name of the file in the reconstruction_surface_mesh.cpp file before remaking
 #If you want the boundaries call:

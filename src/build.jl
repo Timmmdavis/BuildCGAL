@@ -4,11 +4,7 @@
 #Run build process
 using BuildCGAL
 #Jump to correct dir
-ModuleDir=pathof(BuildCGAL);
-ModuleDir=splitdir(ModuleDir); #remove file name
-ModuleDir=ModuleDir[1];
-ModuleDir=splitdir(ModuleDir); #out of src
-ModuleDir=ModuleDir[1];
+ModuleDir=splitdir(splitdir(ModuleDir)[1])[1]
 #upper directory
 CMakeListDir=string(ModuleDir,string("\\examples\\Advancing_front_surface_reconstruction\\")) 
 #where we will build out stuff
