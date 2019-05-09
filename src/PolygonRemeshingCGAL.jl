@@ -20,11 +20,11 @@ elseif Sys.iswindows()
 		println("Polygon remeshing failed")
 	end
 
-	Outputdirectory=string(pwd(),"\\","remeshed.off")
+	OutputDirectory=string(pwd(),"\\","remeshed.off")
 
 end
 
 
-return Outputdirectory
+return OutputDirectory
 
 end
