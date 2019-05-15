@@ -11,16 +11,16 @@ elseif Sys.iswindows()
 	Exe=string(ModuleDir,string("\\examples\\BuildDirPolyMesh\\isotropic_remeshing_example.exe")) 
 	println(Exe)
 
-	str1="$Exe '$SurfaceDir' $target_edge_length | out-file -Encoding ascii 'remeshed.off'"
+	str1="$Exe '$SurfaceDir' $target_edge_length | out-file -Encoding ascii 'IsotropicRemeshing.off'"
 	RunPolygonRemesh=split("powershell $str1")
 	println(RunPolygonRemesh)
 	try
-		run(`$RunPolygonRemesh`)
+		run(`$RunPolygonRemesh`);
 	catch
 		println("Polygon remeshing failed")
 	end
 
-	OutputDirectory=string(pwd(),"\\","remeshed.off")
+	OutputDirectory=string(pwd(),"\\","IsotropicRemeshing.off")
 
 end
 

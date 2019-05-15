@@ -11,15 +11,15 @@ elseif Sys.iswindows()
 	Exe=string(ModuleDir,string("\\examples\\BuildDirAdvFront\\reconstruction_surface_mesh.exe")) 
 	println(Exe)
 
-	str1="$Exe '$PointsDir' | out-file -Encoding ascii 'meshed.off'"
+	str1="$Exe '$PointsDir' | out-file -Encoding ascii 'AdvancingFrontMeshed.off'"
 	RunAdvFront=split("powershell $str1")
 	try
-		run(`$RunAdvFront`)
+		run(`$RunAdvFront`);
 	catch
 		println("Advancing front reconstruction failed")
 	end
 
-	OutputDirectory=string(pwd(),"\\","meshed.off")
+	OutputDirectory=string(pwd(),"\\","AdvancingFrontMeshed.off")
 
 end
 
