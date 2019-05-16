@@ -73,8 +73,10 @@ int main(int argc, char* argv[])
       .protect_constraints(true)//i.e. protect border, here
       );
 
+  //Output precision to match Julias. 
+  std::cout.setf( std::ios::fixed, std:: ios::floatfield ); // floatfield set to fixed
+  std::cout.precision(13);
   std::cout << mesh  << std::endl;
-  //std::cout << "Remeshing done." << std::endl;
 
     }
   return 0;

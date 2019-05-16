@@ -66,6 +66,9 @@ int main(int argc, char* argv[])
                                                points.end(),
                                                construct);
 
+  //Output precision to match Julias. 
+  std::cout.setf( std::ios::fixed, std:: ios::floatfield ); // floatfield set to fixed
+  std::cout.precision(13);
   std::cout << m  << std::endl;
 
   return 0;
