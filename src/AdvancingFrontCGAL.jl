@@ -11,7 +11,12 @@ elseif Sys.iswindows()
 	Exe=string(ModuleDir,string("\\examples\\BuildDirAdvFront\\reconstruction_surface_mesh.exe")) 
 	println(Exe)
 
-	str1="$Exe '$PointsDir' | out-file -Encoding ascii 'AdvancingFrontMeshed.off'"
+	#https://doc.cgal.org/latest/Advancing_front_surface_reconstruction/group__PkgAdvancingFrontSurfaceReconstructionRef.html
+	#Can change the radius_ratio_bound and beta here if wanted:
+	radius_ratio_bound=5;
+	beta=0.52
+
+	str1="$Exe '$PointsDir' $radius_ratio_bound $beta | out-file -Encoding ascii 'AdvancingFrontMeshed.off'" 
 	RunAdvFront=split("powershell $str1")
 	try
 		run(`$RunAdvFront`);

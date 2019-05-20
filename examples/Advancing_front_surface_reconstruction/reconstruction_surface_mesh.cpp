@@ -56,6 +56,16 @@ int main(int argc, char* argv[])
   std::vector<Facet> facets;
   Mesh m;
 
+  if (argc > 2)
+    {
+      std::stringstream Stream;
+      double radius_ratio_bound = 5;
+      double beta  = 0.52;
+      Stream << argv[2];
+      Stream >> radius_ratio_bound;
+      Stream << argv[3];
+      Stream >> beta;
+
   std::copy(std::istream_iterator<Point_3>(in),
             std::istream_iterator<Point_3>(),
             std::back_inserter(points));
@@ -64,12 +74,15 @@ int main(int argc, char* argv[])
 
   CGAL::advancing_front_surface_reconstruction(points.begin(),
                                                points.end(),
-                                               construct);
+                                               construct,
+                                               radius_ratio_bound,
+                                               beta);
 
   //Output precision to match Julias. 
   std::cout.setf( std::ios::fixed, std:: ios::floatfield ); // floatfield set to fixed
   std::cout.precision(13);
   std::cout << m  << std::endl;
 
+    }
   return 0;
 }
