@@ -36,6 +36,8 @@ elseif Sys.iswindows()
 		str7=raw"MPFR_LIBRARIES=C:/dev/CGAL-4.13.1/auxiliary/gmp/lib/libmpfr-4.dll "
 		str8=raw"MPFR_LIBRARIES_DIR=C:/dev/CGAL-4.13.1/auxiliary/gmp/lib " 
 
+
+		
 		#ADVANCING FRONT
 		println("Checking if the .exes already exist (i.e. this has already run)")
 		if isfile("boundaries.exe") && isfile("reconstruction_class.exe") && 
@@ -64,9 +66,9 @@ elseif Sys.iswindows()
 				println("Make build.jl has been run and all the enviroment vars set in this point to folders")
 			end
 		end
+		
 
-
-		#ADVANCING FRONT
+		#Polygon_mesh_processing
 		println("Checking if the .exes already exist (i.e. this has already run)")
 		test=0;
 		if test==1;

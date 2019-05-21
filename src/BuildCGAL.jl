@@ -21,6 +21,7 @@ include("test4deps.jl")
 include("SetEnviromentVarWindows.jl")
 include("AdvancingFrontCGAL.jl")
 include("PolygonRemeshingCGAL.jl")
+include("ConnectedComponentsCGAL.jl")
 
 
 import CMake
