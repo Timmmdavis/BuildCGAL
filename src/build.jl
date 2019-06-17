@@ -1,5 +1,14 @@
-
-
+#Paths that will exist
+#=
+C:\Program Files (x86)\GnuWin32\bin
+C:\Program Files (x86)\mingw-w64\i686-8.1.0-posix-dwarf-rt_v6-rev0\mingw32\bin
+C:\Program Files (x86)\mingw-w64\i686-8.1.0-posix-dwarf-rt_v6-rev0\mingw32\opt\bin
+C:\boost_1_70_0
+C:\boost_1_70_0\bin.v2
+C:\dev\CGAL-4.13.1
+C:\dev\CGAL-4.13.1\auxiliary\gmp\lib
+CMAKE PATH  C:\Users\timmm\.julia\packages\CMake\..............\deps\downloads\cmake-3.12.3-win64-x64\bin
+=#
 
 #Run build process
 using BuildCGAL
