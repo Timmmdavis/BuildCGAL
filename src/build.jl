@@ -12,8 +12,9 @@ CMAKE PATH  C:\Users\timmm\.julia\packages\CMake\..............\deps\downloads\c
 
 #Run build process
 using BuildCGAL
+
 #Jump to correct dir
-ModuleDir=splitdir(splitdir(ModuleDir)[1])[1]
+ModuleDir=splitdir(splitdir(pathof(BuildCGAL))[1])[1]
 #upper directory
 CMakeListDir=string(ModuleDir,string("\\examples\\Advancing_front_surface_reconstruction\\")) 
 #where we will build out stuff
@@ -110,7 +111,7 @@ elseif Sys.iswindows()
 		end
 
 		if CMakeExists==false
-			println("Downloading CMake")
+
 			#Install CMAKE
 			#https://github.com/JuliaPackaging/CMake.jl/tree/5985636ac494ac2e22c19c282e54f65e7bbc7ad9
 			io=open("cmakepath.txt","r");
@@ -186,8 +187,9 @@ elseif Sys.iswindows()
 			sleep(10)
 
 			CreateBoost2=split("powershell ./b2.exe toolset=gcc")
-			run(`$CreateBoost2`)
-			
+			try run(`$CreateBoost2`)
+			catch
+			end
 			println("Sleeping for 10")
 			sleep(10)
 

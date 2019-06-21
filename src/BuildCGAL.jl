@@ -6,7 +6,7 @@ BuildDir=string(splitdir(splitdir(pathof(BuildCGAL))[1])[1],string("\\examples\\
 
 try cd(BuildDir)
 catch
-	("Build directory at $BuildDir  doesnt exist, create this")
+	error("Build directory at $BuildDir  doesnt exist, create this")
 end
 
 

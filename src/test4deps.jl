@@ -5,9 +5,13 @@ function test4deps()
 #we then read file and check if its the right version
 
 #7zip
-testgcc=split(raw"powershell 7z -version | out-file -Encoding ascii 'test.txt'")
-desiredstring=""
-(SevenZipExists)=TryRunFromPowershell(testgcc,desiredstring)
+test7z=split(raw"powershell 7z -version | out-file -Encoding ascii 'test.txt'")
+desiredstring="7-Zip 19.00 (x64) : Copyright (c) 1999-2018 Igor Pavlov : 2019-02-21\r\n"
+(SevenZipExists)=TryRunFromPowershell2(test7z,desiredstring)
+if SevenZipExists==false
+	error("install 7 zip (and add path as enviroment variable)")
+end
+
 #if SevenZipExists==false
 #	error("create path enviroment var that points to the 7zip installation in julias bin dir")
 #end
@@ -51,6 +55,8 @@ try
 	run(`$runexestring`)
 	io=open("test.txt","r");
 	Exists=readline(io)=="$desiredstring"
+	println(readline(io))
+	println("$desiredstring")
 	close(io)
 	return Exists
 catch
@@ -60,4 +66,21 @@ end
 end
 
 
+function TryRunFromPowershell2(runexestring,desiredstring) 
 
+	#remove file we write to if it exists
+	if isfile("test.txt")
+		rm("test.txt")
+	end
+	try run(`$runexestring`) #errors because of 7zip
+	catch
+	end
+	io=open("test.txt","r");
+	x=readline(io)
+	x2=readline(io) #2nd line
+	Exists=strip("$x2")==strip("$desiredstring")#readline(io)=="$desiredstring"
+	close(io)
+	
+	return Exists
+
+end
