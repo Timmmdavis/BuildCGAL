@@ -3,7 +3,31 @@ function AdvancingFrontCGAL(PointsDir)
 
 if Sys.islinux()
 	
-	println("To do")
+	CurrentDir=pwd()
+
+	
+	ModuleDir=splitdir(splitdir(pathof(BuildCGAL))[1])[1]
+	ProgramDir=string(ModuleDir,string("/examples/BuildDirAdvFront/"))
+	cd(ProgramDir)
+
+	outer=string("$CurrentDir","/AdvancingFrontMeshed.off")
+
+	radius_ratio_bound=5;
+	beta=0.52;
+
+	RunAdvFront="./reconstruction_surface_mesh $PointsDir $radius_ratio_bound $beta"
+	RunAdvFront=split("$RunAdvFront")
+
+	println(RunAdvFront)
+	try
+		run(pipeline(`$RunAdvFront`, "$outer"  ));
+	catch
+		println("Advancing front reconstruction failed")
+	end
+
+	cd(CurrentDir)
+
+	OutputDirectory=string(pwd(),"/","AdvancingFrontMeshed.off")
 
 elseif Sys.iswindows()
 

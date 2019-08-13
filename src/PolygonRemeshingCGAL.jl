@@ -2,8 +2,31 @@ function PolygonRemeshingCGAL(SurfaceDir,target_edge_length)
 
 
 if Sys.islinux()
+
+	CurrentDir=pwd()
+
 	
-	println("To do")
+	ModuleDir=splitdir(splitdir(pathof(BuildCGAL))[1])[1]
+	ProgramDir=string(ModuleDir,string("/examples/BuildDirPolyMesh/"))
+	cd(ProgramDir)
+
+	outer=string("$CurrentDir","/IsotropicRemeshing.off")
+
+	RunPolygonRemesh="./isotropic_remeshing_example $SurfaceDir $target_edge_length"
+	RunPolygonRemesh=split("$RunPolygonRemesh")
+
+	println(RunPolygonRemesh)
+	try
+		run(pipeline(`$RunPolygonRemesh`, "$outer"  ));
+	catch
+		println("Polygon remeshing failed")
+	end
+
+	cd(CurrentDir)
+
+	OutputDirectory=string(pwd(),"/","IsotropicRemeshing.off")
+
+
 
 elseif Sys.iswindows()
 

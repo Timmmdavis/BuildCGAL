@@ -5,10 +5,24 @@ sudo apt-get install libcgal-dev
 #Also the demos
 #extracted files in 
 tar -xvf /usr/share/doc/libgcal/examples -C /MYHOMEDIR
-#In this folder (or a sub folder i.e. ADVANIVNGFRONT) I then call
+#In this folder (or a sub folder i.e. ADVANCINGFRONT) I then call
 cmake .
 make
 #then you end up with a load of files with the same names as the X.cpp. Just call ./X to run for example capturing the terminal output in a file:
+
+In Linux: paste from : 
+/downloads/CGAL-4.13.1/CGAL-4.13.1/examples/Advancing_front_surface_reconstruction
+into: 
+/home/username/.julia/packages/BuildCGAL/xxxxx/examples/BuildDirAdvFront/
+check there are no #CMakeLists.txt files hanging around
+then call in terminal 
+cmake .
+make
+Do the same for 
+/downloads/CGAL-4.13.1/CGAL-4.13.1/examples/Polygon_mesh_processing
+then you should be able to use without the extra stuff. 
+
+
 
 
 ######################################################################

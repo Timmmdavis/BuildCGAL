@@ -3,7 +3,27 @@ function ConnectedComponentsCGAL(SurfaceDir)
 
 if Sys.islinux()
 	
-	println("To do")
+	CurrentDir=pwd()
+
+	ModuleDir=splitdir(splitdir(pathof(BuildCGAL))[1])[1]
+	ProgramDir=string(ModuleDir,string("/examples/BuildDirPolyMesh/"))
+	cd(ProgramDir)
+
+	outer=string("$CurrentDir","/ConnectedComponents.txt")
+
+	RunConnectedComponents="./connected_components_example $SurfaceDir"
+	RunConnectedComponents=split("$RunConnectedComponents")
+
+	println(RunConnectedComponents)
+	try
+		run(pipeline(`$RunConnectedComponents`, "$outer"  ));
+	catch
+		println("Connected component finding failed")
+	end
+
+	cd(CurrentDir)
+
+	OutputDirectory=string(pwd(),"/","ConnectedComponents.txt")
 
 elseif Sys.iswindows()
 
