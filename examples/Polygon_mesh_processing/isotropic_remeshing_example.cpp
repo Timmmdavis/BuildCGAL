@@ -48,29 +48,30 @@ int main(int argc, char* argv[])
       Stream << argv[2];
       Stream >> target_edge_length;
     //double target_edge_length = 0.08;
-  unsigned int nb_iter = 3;
+  unsigned int nb_iter = 5;
 
   //std::cout << "target_edge_length: " << target_edge_length << std::endl;
 
+  /*
   //std::cout << "Split border...";
-
     std::vector<edge_descriptor> border;
     PMP::border_halfedges(faces(mesh),
       mesh,
       boost::make_function_output_iterator(halfedge2edge(mesh, border)));
     PMP::split_long_edges(border, target_edge_length, mesh);
+*/
 
-  //std::cout << "done." << std::endl;
-
-  //std::cout << "Start remeshing of " << filename
-  //  << " (" << num_faces(mesh) << " faces)..." << std::endl;
-
+  //std::cout << "Remesh...";
   PMP::isotropic_remeshing(
       faces(mesh),
       target_edge_length,
       mesh,
       PMP::parameters::number_of_iterations(nb_iter)
-      .protect_constraints(true)//i.e. protect border, here
+      //https://doc.cgal.org/latest/Polygon_mesh_processing/group__pmp__namedparameters.html
+      //.protect_constraints(true)  //i.e. protect border, here
+      .relax_constraints(true)      // not protecting border
+      .collapse_constraints(true)   // not protecting border
+      .number_of_relaxation_steps(15)//more isotropic
       );
 
   //Output precision to match Julias. 
