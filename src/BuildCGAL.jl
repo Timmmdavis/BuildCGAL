@@ -20,7 +20,7 @@ end
 wait_for_key(prompt) = (print(stdout, prompt); read(stdin, 1); nothing)
 
 #functions we export
-include("SetupCGAL.jl")
+include("Compile_CGAL_Meshing_Functions.jl")
 include("test4deps.jl")
 include("SetEnviromentVarWindows.jl")
 include("AdvancingFrontCGAL.jl")

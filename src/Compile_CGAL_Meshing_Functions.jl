@@ -1,4 +1,4 @@
-function SetupCGAL()
+function Compile_CGAL_Meshing_Functions()
 
 ModuleDir=splitdir(splitdir(pathof(BuildCGAL))[1])[1]
 
