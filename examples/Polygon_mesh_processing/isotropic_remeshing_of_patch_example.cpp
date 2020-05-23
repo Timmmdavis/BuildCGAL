@@ -124,7 +124,9 @@ int main(int argc, char* argv[])
                            mesh,
                            PMP::parameters::number_of_iterations(nb_iter)
                            .face_patch_map(selected)
-                           .protect_constraints(true)//i.e. protect border, here
+                           .relax_constraints(true)      // not protecting border
+                           .collapse_constraints(true)   // not protecting border
+                           .number_of_relaxation_steps(15)//more isotropic
                            );
 
   //Output precision to match Julias. 
