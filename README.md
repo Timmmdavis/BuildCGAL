@@ -1,5 +1,5 @@
 # BuildCGAL
-Builds CGAL and scripts for meshing
+Builds [CGAL](https://www.cgal.org/)  and scripts for meshing
 
 # Linux
 If you are using Linux, you are lucky. Simply install CGAL using https://www.cgal.org/download/linux.html
