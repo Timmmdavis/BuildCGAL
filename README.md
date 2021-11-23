@@ -13,11 +13,20 @@ If you are Windows, less good but not impossible.
 Firefox required!
 Install it:
 ```
-include("path2file/Compile_CGAL_Meshing_Functions.jl")
+include(raw"path2file\Compile_CGAL_Meshing_Functions.jl")
 ```
-Compile it:
+Then call BuildGCAL
 ```
-include("Compile_CGAL_Meshing_Functions.jl")
+using BuildCGAL
+```
+If you get an error about directorys, create a new folder inside "path2file/examples" called "BuildDir". Now compile it using:
+```
+BuildCGAL.Compile_CGAL_Meshing_Functions()
+```
+If you get an error about 7z make sure you have the following working version of the cmd version of 7zip on path: 7-Zip 19.00 (x64), from https://www.7-zip.org/download.html. 
+Then call
+```
+include(raw"path2file\DownloadAndCheckAllCGALCompilerDependencies.jl")
 ```
 With some fiddling you should get this to work. 
 
