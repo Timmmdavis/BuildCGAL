@@ -3,13 +3,16 @@ using CMake
 
 #where we will build out stuff
 if Sys.islinux()
-	#It should already be built
+    #It should already be built
 else
-	BuildDir=string(splitdir(splitdir(pathof(BuildCGAL))[1])[1],string("\\examples\\BuildDir\\")) 
-	try cd(BuildDir)
-	catch
-		error("Build directory at $BuildDir  doesnt exist, create this")
-	end
+    BuildDir=string(splitdir(splitdir(pathof(BuildCGAL))[1])[1],string("\\examples\\BuildDir\\")) 
+    try 
+        cd(BuildDir)
+    catch
+        # Create the directory if it doesn't exist
+        mkpath(BuildDir)
+        cd(BuildDir)
+    end
 end
 
 
