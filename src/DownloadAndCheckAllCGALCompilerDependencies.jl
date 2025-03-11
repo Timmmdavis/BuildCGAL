@@ -142,6 +142,7 @@ elseif Sys.iswindows()
 			println("you will get a gcc dialog here - use defaults")
 			RunInstall=split("powershell ./mingw-w64-install.exe")
 			run(`$RunInstall`)
+			println("If the dialog below fails - install using ")
 			BuildCGAL.wait_for_key("Finished with GCC Dialog? type a key, delete it, press enter to continue...")
 			
 			println("Sleeping for 10")
@@ -153,7 +154,7 @@ elseif Sys.iswindows()
 			GccBinPath2=raw"C:\Program Files (x86)\mingw-w64\i686-8.1.0-posix-dwarf-rt_v6-rev0\mingw32\opt\bin"
 			BuildCGAL.SetEnviromentVarWindows(GccBinPath2)	
 			
-			println("When you call 'gcc --version' from powershell it must be gcc.exe (i686-posix-dwarf-rev0, Built by MinGW-W64 project) 8.1.0 this one! set this test up")
+			println("I personally had issues with the mingw download (dialog then nothing happened), to get around I installed https://www.msys2.org/ then After installation, use the package manager to install MinGW: pacman -S mingw-w64-i686-toolchain. Go with the defaults and install everything. Check it runs in powershell using gcc –version, make sure the C:/msys64/mingw32/bin its on the path")
 			BuildCGAL.wait_for_key("Checked? press enter to continue...")
 
 		end	
@@ -163,8 +164,8 @@ elseif Sys.iswindows()
 			if isfile("boost_1_70_0.zip")==false
 				println("Downloading Boost")
 				#Download boost files
-				SetSecurityProfile=(raw"powershell [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12")
-				Link2BoostFiles="https://dl.bintray.com/boostorg/release/1.70.0/source/boost_1_70_0.zip"
+			    SetSecurityProfile=(raw"powershell [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12")
+			    Link2BoostFiles="https://sourceforge.net/projects/boost/files/boost/1.70.0/boost_1_70_0.zip/download"
 				DownloadFile=("Invoke-WebRequest -Uri $Link2BoostFiles -O boost_1_70_0.zip -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox")
 				DownloadBoost=split(string(SetSecurityProfile,";",DownloadFile))
 				run(`$DownloadBoost`)
