@@ -28,7 +28,7 @@ jobs:
             triplet: x86_64-w64-mingw32
           - os: ubuntu-22.04            # older glibc, so the binary runs on most distros
             triplet: x86_64-linux-gnu
-          - os: macos-14
+          - os: macos-latest          # Apple Silicon
             triplet: aarch64-apple-darwin
     runs-on: ${{ matrix.os }}
     defaults:
@@ -64,7 +64,8 @@ jobs:
           path: dist/cgal_tools-${{ matrix.triplet }}.tar.gz
 
   release:
-    if: startsWith(github.ref, 'refs/tags/cgal-tools-v')
+    # Publish whatever platforms built, so one broken runner doesn't block the release.
+    if: ${{ always() && startsWith(github.ref, 'refs/tags/cgal-tools-v') }}
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -75,4 +76,5 @@ jobs:
       - uses: softprops/action-gh-release@v2
         with:
           files: dist/*.tar.gz
+          fail_on_unmatched_files: false
           body: Prebuilt CGAL tools used by BuildCGAL. Pkg downloads these automatically; you do not need to fetch them by hand.
