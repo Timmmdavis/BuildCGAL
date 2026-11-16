@@ -1,7 +1,17 @@
 name = "BuildCGAL"
 uuid = "c72f68c0-6b66-11e9-29f9-8d7ea9d25612"
 authors = ["Tim Davis <davis@gfz-potsdam.de>"]
-version = "0.1.0"
+version = "0.2.0"
 
 [deps]
-CMake = "631607c0-34d2-5d66-819e-eb0f9aa2061a"
+Artifacts = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
+
+[compat]
+Artifacts = "1"
+julia = "1.6"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]

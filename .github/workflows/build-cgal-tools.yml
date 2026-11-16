@@ -1,0 +1,78 @@
+# Builds the CGAL tools for each platform and attaches them to a GitHub release.
+#
+# To publish a new set of binaries:
+#   git tag cgal-tools-v1 && git push origin cgal-tools-v1
+# then, once this workflow has finished, run locally:
+#   julia cgal_tools/bind_artifacts.jl cgal-tools-v1
+# and commit the updated Artifacts.toml.
+#
+# Running it by hand (workflow_dispatch) builds and uploads the tarballs as
+# workflow artifacts only, without making a release.
+name: build-cgal-tools
+
+on:
+  push:
+    tags: ['cgal-tools-v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            triplet: x86_64-w64-mingw32
+          - os: ubuntu-22.04            # older glibc, so the binary runs on most distros
+            triplet: x86_64-linux-gnu
+          - os: macos-14
+            triplet: aarch64-apple-darwin
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: ${{ matrix.os == 'windows-latest' && 'msys2 {0}' || 'bash' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install toolchain (Windows / MSYS2 UCRT64)
+        if: runner.os == 'Windows'
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          install: >-
+            mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-ninja
+            mingw-w64-ucrt-x86_64-boost mingw-w64-ucrt-x86_64-gmp mingw-w64-ucrt-x86_64-mpfr
+            tar xz curl
+      - name: Install toolchain (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y build-essential cmake libboost-dev libgmp-dev libmpfr-dev
+      - name: Install toolchain (macOS)
+        if: runner.os == 'macOS'
+        run: brew install boost gmp mpfr
+
+      - name: Build
+        env:
+          CMAKE_EXTRA_ARGS: ${{ runner.os == 'Windows' && '-G Ninja' || '' }}
+        run: bash cgal_tools/build.sh ${{ matrix.triplet }} dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cgal_tools-${{ matrix.triplet }}
+          path: dist/cgal_tools-${{ matrix.triplet }}.tar.gz
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/cgal-tools-v')
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.tar.gz
+          body: Prebuilt CGAL tools used by BuildCGAL. Pkg downloads these automatically; you do not need to fetch them by hand.
