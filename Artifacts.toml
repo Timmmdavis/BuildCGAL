@@ -1,0 +1,17 @@
+[[cgal_tools]]
+arch = "x86_64"
+git-tree-sha1 = "67e3bf7a9b83e36f451336ae374a1c5bfeec3cb5"
+os = "windows"
+
+    [[cgal_tools.download]]
+    sha256 = "34a7e38f00f2a40e93c6d9ac74e560932159ab3fe00befa76e468e417c1512e6"
+    url = "https://github.com/Timmmdavis/BuildCGAL/releases/download/cgal-tools-v1/cgal_tools-x86_64-w64-mingw32.tar.gz"
+[[cgal_tools]]
+arch = "x86_64"
+git-tree-sha1 = "7234bd4c00f0fe77e105acafb1d742cd03160570"
+libc = "glibc"
+os = "linux"
+
+    [[cgal_tools.download]]
+    sha256 = "b86cc56dad590ae5c5fa1b74df5b7f9e963a39ff5682db26566473c19526a1d9"
+    url = "https://github.com/Timmmdavis/BuildCGAL/releases/download/cgal-tools-v1/cgal_tools-x86_64-linux-gnu.tar.gz"
