@@ -53,12 +53,12 @@ ENV["BUILDCGAL_TOOLS_DIR"] = "path/to/folder/with/the/executables"
 BuildCGAL.tools_dir()   # shows which folder is in use
 ```
 
-## Publishing new binaries (maintainers)
+## Maintaining: adding tools, upgrading CGAL, publishing binaries
 
-1. Push a tag: `git tag cgal-tools-v2 && git push origin cgal-tools-v2`. The
-   [build-cgal-tools](.github/workflows/build-cgal-tools.yml) workflow builds every platform
-   and attaches the tarballs to a GitHub release.
-2. Run `julia cgal_tools/bind_artifacts.jl cgal-tools-v2` and commit the updated `Artifacts.toml`.
+See the step-by-step guide in [`cgal_tools/README.md`](cgal_tools/README.md). In short:
+change the C++ in `cgal_tools/`, push a new tag `cgal-tools-vN` (GitHub Actions builds every
+platform and makes a release), run `julia cgal_tools/bind_artifacts.jl cgal-tools-vN`, then
+commit and push `Artifacts.toml`.
 
 ## Upgrading from the old installer
 
