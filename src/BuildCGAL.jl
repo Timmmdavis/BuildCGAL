@@ -1,9 +1,10 @@
 """
     BuildCGAL
 
-Julia wrappers around four small CGAL command-line tools used for meshing:
+Julia wrappers around five small CGAL command-line tools used for meshing:
 advancing-front surface reconstruction, isotropic remeshing (whole mesh or a
-patch) and connected components.
+patch), isotropic remeshing graded towards the mesh border (the crack front)
+and connected components.
 
 The tools come prebuilt. `] add BuildCGAL` downloads the right binaries for
 your machine as a Julia artifact, so there is nothing to compile and no PATH
@@ -106,6 +107,40 @@ function PolygonRemeshingPatchCGAL(SurfaceDir, TriNumbersTxtDir, target_edge_len
     out = joinpath(pwd(), "IsotropicRemeshingPatch.off")
     run_tool("isotropic_remeshing_of_patch_example",
              [SurfaceDir, target_edge_length, TriNumbersTxtDir], out)
+end
+
+"""
+    GradedRemeshingCGAL(SurfaceDir, h, hf; growth=1.3, iterations=8, ProtectFront=false,
+                        FixedVerticesTxt="", band=0.0, smooth=10) -> String
+
+Isotropically remesh the triangle mesh in the `.off` file `SurfaceDir` with an
+edge length that is `hf` at the mesh border (the crack front) and grows by the
+factor `growth` per row of triangles, up to `h` away from the front:
+`s(x) = min(h, hf + c*max(0, d(x)-band))`, `c = 2(growth-1)/√3`, with `d(x)` the
+distance to the front. New vertices are put back onto the input surface.
+
+- `ProtectFront=true`: border edges are kept exactly as given (use when the front
+  has already been resampled at spacing `hf`); otherwise front vertices are added
+  or removed by halving edges and slide along the input front.
+- `FixedVerticesTxt`: text file of vertex numbers (1-based, one per line) that
+  must not be moved or removed, e.g. hand-placed rows next to the front.
+- `band`: distance from the front within which the size stays `hf`.
+- `smooth`: iterations of angle smoothing after remeshing (0 = none).
+
+Writes `GradedRemeshing.off` in the current directory and returns its path.
+"""
+function GradedRemeshingCGAL(SurfaceDir, h, hf; growth = 1.3, iterations = 8, ProtectFront = false,
+                             FixedVerticesTxt = "", band = 0.0, smooth = 10)
+    out = joinpath(pwd(), "GradedRemeshing.off")
+    # the tool reads 0-based vertex numbers
+    fixed = "-"
+    if !isempty(FixedVerticesTxt)
+        fixed = joinpath(pwd(), "GradedRemeshingFixed0.txt")
+        ids = [parse(Int, l) - 1 for l in eachline(FixedVerticesTxt) if !isempty(strip(l))]
+        open(io -> foreach(i -> println(io, i), ids), fixed, "w")
+    end
+    run_tool("graded_remeshing",
+             [SurfaceDir, h, hf, growth, iterations, Int(ProtectFront), fixed, band, smooth], out)
 end
 
 """

@@ -1,4 +1,4 @@
-# The four small CGAL command-line tools that BuildCGAL calls.
+# The small CGAL command-line tools that BuildCGAL calls.
 #
 # These are built once per platform by .github/workflows/build-cgal-tools.yml,
 # packed into a tarball and attached to a GitHub release. Julia users never
@@ -34,6 +34,7 @@ find_package(CGAL REQUIRED)
 set(TOOLS
   reconstruction_surface_mesh
   isotropic_remeshing_example
+  graded_remeshing
   isotropic_remeshing_of_patch_example
   connected_components_example
 )

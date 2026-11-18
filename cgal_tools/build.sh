@@ -49,6 +49,12 @@ EXT=""; case "$TRIPLET" in *mingw*) EXT=".exe";; esac
 "$WORK/prefix/bin/connected_components_example$EXT" \
   "$HERE/../examples/Polygon_mesh_processing/data/blobby_3cc.off" > "$WORK/cc.txt"
 test "$(sort -u "$WORK/cc.txt" | wc -l | tr -d ' ')" = "3"
+# graded_remeshing: a flat disc of 48 triangles (24 rim edges), edges 0.05 at the rim growing to 0.2 inside,
+# must come back as a valid, much finer mesh
+"$WORK/prefix/bin/graded_remeshing$EXT" "$HERE/test_data/disc.off" 0.2 0.05 1.3 8 0 - 0 10 > "$WORK/graded.off"
+test "$(head -1 "$WORK/graded.off" | tr -d '\r')" = "OFF"
+test "$(sed -n 2p "$WORK/graded.off" | awk '{print $2}')" -gt 300
+echo "graded_remeshing: $(sed -n 2p "$WORK/graded.off" | awk '{print $2}') triangles"
 
 TARBALL="$OUT/cgal_tools-$TRIPLET.tar.gz"
 tar -czf "$TARBALL" -C "$WORK/prefix" .
