@@ -1,7 +1,8 @@
 # BuildCGAL
 
 Julia functions for meshing with [CGAL](https://www.cgal.org/): advancing-front surface
-reconstruction, isotropic remeshing (whole mesh or a patch) and connected components.
+reconstruction, isotropic remeshing (whole mesh, a patch, or graded towards the mesh border)
+and connected components.
 Used by [CutAndDisplaceJulia](https://github.com/Timmmdavis/CutAndDisplaceJulia).
 
 ## Install
@@ -31,11 +32,18 @@ using BuildCGAL
 off = BuildCGAL.AdvancingFrontCGAL("points.xyz")                 # -> AdvancingFrontMeshed.off
 off = BuildCGAL.PolygonRemeshingCGAL("mesh.off", 0.1)             # -> IsotropicRemeshing.off
 off = BuildCGAL.PolygonRemeshingPatchCGAL("mesh.off", "TriNos.txt", 0.05)  # -> IsotropicRemeshingPatch.off
+off = BuildCGAL.GradedRemeshingCGAL("mesh.off", 0.2, 0.05; growth = 1.3)  # -> GradedRemeshing.off
 txt = BuildCGAL.ConnectedComponentsCGAL("mesh.off")               # -> ConnectedComponents.txt
 ```
 
 `TriNos.txt` lists the triangles to remesh, one 1-based number per line. If a tool fails,
 the function throws an error that includes CGAL's message.
+
+`GradedRemeshingCGAL` remeshes with edge length 0.05 at the mesh border (a crack front),
+growing by 1.3 per row of triangles to 0.2 inside; see its docstring for the options (keeping
+the border or chosen vertices fixed). It needs the `graded_remeshing` tool, which is in the
+CGAL tools from release `cgal-tools-v2` on; until that release exists, point
+`BUILDCGAL_TOOLS_DIR` at a folder with your own build (see below).
 
 ## Using your own build of the tools
 
