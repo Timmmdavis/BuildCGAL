@@ -1,25 +1,25 @@
 [[cgal_tools]]
 arch = "x86_64"
-git-tree-sha1 = "b3b3aaa42b982f2d28bef2297b1f0031b0781eb3"
+git-tree-sha1 = "e3950fb25d5b5b75e700fc09eefb1659fb92a3fa"
 os = "windows"
 
     [[cgal_tools.download]]
-    sha256 = "3c09aded59c0387c1304dc9506bf2a38ae93a547be62dac02bc432673eddbcac"
-    url = "https://github.com/Timmmdavis/BuildCGAL/releases/download/cgal-tools-v2/cgal_tools-x86_64-w64-mingw32.tar.gz"
+    sha256 = "4990d963bd34d6248a5a2ca6b7ef5a71102c24152590a225d9877e31746b8316"
+    url = "https://github.com/Timmmdavis/BuildCGAL/releases/download/cgal-tools-v3/cgal_tools-x86_64-w64-mingw32.tar.gz"
 [[cgal_tools]]
 arch = "x86_64"
-git-tree-sha1 = "5314bacae1a8fe73188fc3cf5f816d416e69a3c0"
+git-tree-sha1 = "a31dc7723ecf3d678745f9d9cd1bcf5b9c6a3f44"
 libc = "glibc"
 os = "linux"
 
     [[cgal_tools.download]]
-    sha256 = "6c1df9c3d5ca326a75edca1881f0238994cd9ebdfa7ac0edcb2f5cf39d41ad4d"
-    url = "https://github.com/Timmmdavis/BuildCGAL/releases/download/cgal-tools-v2/cgal_tools-x86_64-linux-gnu.tar.gz"
+    sha256 = "446c8645fc82ef8dde1b08046abbe95dd221f4058f39ee7be2d05d95c9a81c2c"
+    url = "https://github.com/Timmmdavis/BuildCGAL/releases/download/cgal-tools-v3/cgal_tools-x86_64-linux-gnu.tar.gz"
 [[cgal_tools]]
 arch = "aarch64"
-git-tree-sha1 = "2a112ced72c184013f6d3d49021bda880f811dc2"
+git-tree-sha1 = "b2afc1e99b453ebd1ff124dd60cabb2ba2fd4576"
 os = "macos"
 
     [[cgal_tools.download]]
-    sha256 = "748e86f361f1b5bd158b3d9cb76851aa499bbc4a5b7023b1623364d8dca01409"
-    url = "https://github.com/Timmmdavis/BuildCGAL/releases/download/cgal-tools-v2/cgal_tools-aarch64-apple-darwin.tar.gz"
+    sha256 = "c09a3df59870e0a129e40b13e41b025db0be70aa1677f5338c5b7786cec2e078"
+    url = "https://github.com/Timmmdavis/BuildCGAL/releases/download/cgal-tools-v3/cgal_tools-aarch64-apple-darwin.tar.gz"

@@ -1,7 +1,7 @@
 name = "BuildCGAL"
 uuid = "c72f68c0-6b66-11e9-29f9-8d7ea9d25612"
 authors = ["Tim Davis <davis@gfz-potsdam.de>"]
-version = "0.2.0"
+version = "0.2.1"
 
 [deps]
 Artifacts = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
