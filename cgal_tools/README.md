@@ -46,11 +46,27 @@ pacman -S --needed mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-cmake mingw-w
 
 This doesn't change your Windows PATH; everything stays inside `C:\msys64`.
 
-**Linux (Debian/Ubuntu)**:
+**Linux (Debian/Ubuntu)**, for a build that only has to run on your own machine:
 
 ```bash
 sudo apt-get install build-essential cmake libboost-dev libgmp-dev libmpfr-dev curl xz-utils
 ```
+
+CGAL 6.2 needs Boost 1.74 or newer (Ubuntu 20.04 has 1.71). To reproduce the release build
+instead, which runs on any Linux with glibc 2.17 or newer, use the conda-forge toolchain from
+the workflow's "Install toolchain (Linux ...)" step: install
+[micromamba](https://mamba.readthedocs.io/en/latest/installation/micromamba-installation.html), then
+
+```bash
+micromamba create -p ~/cgal-env -c conda-forge --override-channels \
+  gxx_linux-64 "sysroot_linux-64=2.17" cmake make libboost-devel gmp mpfr patchelf
+export PATH=~/cgal-env/bin:$PATH CONDA_PREFIX=~/cgal-env CXX=~/cgal-env/bin/x86_64-conda-linux-gnu-g++
+export CMAKE_EXTRA_ARGS="-DCGAL_TOOLS_STATIC=OFF -DCMAKE_PREFIX_PATH=$HOME/cgal-env"
+```
+
+That build links GMP and MPFR as shared libraries and `build.sh` copies them into `lib/`
+next to `bin/`; the tools find them there on their own. `build.sh` prints the oldest glibc
+the tools need (`== Needs glibc >= 2.17`).
 
 **macOS**: install Xcode command-line tools (`xcode-select --install`) and
 [Homebrew](https://brew.sh), then `brew install cmake boost gmp mpfr`.
@@ -205,9 +221,12 @@ Changes to the Julia code alone don't need new binaries.
   `ubuntu-latest`, `macos-latest`), push to `master`, and push a **new** tag. The release
   step still publishes the platforms that did build, so you can bind those and fix the
   other one later.
-- **Linux: keep an older runner where possible.** `ubuntu-22.04` is used on purpose:
-  programs built on an older Linux run on newer ones but not the other way round. If it's
-  retired, use the oldest Ubuntu still offered.
+- **Linux: which Linux the tools run on** is set by the conda-forge sysroot
+  (`sysroot_linux-64=2.17` in the workflow), not by the runner, so `ubuntu-latest` is fine.
+  Programs built against a newer glibc don't run on older Linux (users see
+  ``version `GLIBC_2.34' not found``); the build log's `== Needs glibc >= ...` line shows
+  what a build needs. Keep it at 2.17 unless conda-forge drops it, and say so in the release
+  notes if it goes up.
 - **The build step fails.** Open the job log on the Actions tab. Package-name changes in
   MSYS2/apt/brew and CGAL API changes are the usual causes. Reproduce locally with part A.
 - **Users report "Hash Mismatch" on `cgal_tools`.** Their copy of BuildCGAL lists

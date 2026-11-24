@@ -15,7 +15,8 @@ That's all. The CGAL tools come prebuilt: Pkg downloads the right ones for your 
 (with a progress bar) into your Julia depot. You don't need a compiler, admin rights,
 7-Zip, Boost, MSYS2 or any PATH changes.
 
-Prebuilt for: Windows x86_64, Linux x86_64 (glibc), macOS Apple Silicon.
+Prebuilt for: Windows x86_64, Linux x86_64 (any distribution with glibc 2.17 or newer, i.e.
+practically any Linux from 2014 on, including older HPC clusters), macOS Apple Silicon.
 
 Check it works:
 

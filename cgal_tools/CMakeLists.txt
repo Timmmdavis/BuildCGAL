@@ -19,14 +19,27 @@ endif()
 
 # Link the C++ runtime, GMP and MPFR statically where possible so each tool is
 # a single self-contained executable (no DLLs or .so files to ship).
-option(CGAL_TOOLS_STATIC "Link the tools statically" ON)
+# With CGAL_TOOLS_STATIC=OFF (the portable Linux build, whose toolchain has no
+# static GMP/MPFR) they are linked as shared libraries instead; build.sh then
+# copies them into lib/ next to bin/, where the RPATH below finds them.
+option(CGAL_TOOLS_STATIC "Link GMP and MPFR statically" ON)
 if(CGAL_TOOLS_STATIC)
   set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_STATIC_LIBRARY_SUFFIX})
   if(WIN32)
     add_link_options(-static)
-  elseif(NOT APPLE)
-    add_link_options(-static-libstdc++ -static-libgcc)
   endif()
+else()
+  # GMPXX (GMP's C++ classes) would bring in the shared libstdc++; CGAL's own
+  # GMP wrappers do the same job without it.
+  set(CGAL_WITH_GMPXX OFF CACHE BOOL "" FORCE)
+endif()
+if(UNIX AND NOT APPLE)
+  # The C++ runtime is always linked in, so the tools don't depend on the
+  # libstdc++ version of the machine they run on.
+  add_link_options(-static-libstdc++ -static-libgcc)
+  # Look for shared libraries only in lib/ next to bin/, never in build-machine folders.
+  set(CMAKE_INSTALL_RPATH "\$ORIGIN/../lib")
+  set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
 endif()
 
 find_package(CGAL REQUIRED)

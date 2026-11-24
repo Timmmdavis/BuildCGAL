@@ -33,8 +33,28 @@ echo "== Building"
 cmake --build "$WORK/build" --parallel
 cmake --install "$WORK/build" --prefix "$WORK/prefix"
 
+# Linux with shared GMP/MPFR (CGAL_TOOLS_STATIC=OFF, the portable build): ship
+# those libraries in lib/, where the tools' RPATH ($ORIGIN/../lib) finds them.
+if [ "$(uname)" = "Linux" ]; then
+  for lib in $(LD_LIBRARY_PATH="${CONDA_PREFIX:+$CONDA_PREFIX/lib}" ldd "$WORK/prefix/bin/"* \
+               | awk '/lib(gmp|mpfr)[^ ]*\.so/ && $3 ~ /^\// {print $3}' | sort -u); do
+    mkdir -p "$WORK/prefix/lib"
+    cp -L "$lib" "$WORK/prefix/lib/"
+  done
+  # conda-forge's compiler adds its own lib folder to the RPATH; keep only ours.
+  if [ -d "$WORK/prefix/lib" ] && command -v patchelf > /dev/null; then
+    for exe in "$WORK/prefix/bin/"*; do patchelf --force-rpath --set-rpath '$ORIGIN/../lib' "$exe"; done
+  fi
+fi
+
 # Strip symbols to keep the download small (macOS strip needs -x for executables).
 if [ "$(uname)" = "Darwin" ]; then strip -x "$WORK/prefix/bin/"*; else strip "$WORK/prefix/bin/"*; fi
+
+# Linux: report the newest glibc the tools need (the oldest Linux they run on).
+if [ "$(uname)" = "Linux" ]; then
+  echo "== Needs glibc >= $(objdump -T "$WORK/prefix/bin/"* "$WORK/prefix/lib/"* 2>/dev/null \
+    | grep -o 'GLIBC_[0-9.]*' | sort -uV | tail -1 | cut -d_ -f2)"
+fi
 
 # Record what went into the build next to the binaries.
 cat > "$WORK/prefix/BUILDINFO.txt" <<EOF

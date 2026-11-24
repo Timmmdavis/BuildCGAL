@@ -1,0 +1,92 @@
+# Builds the CGAL tools for each platform and attaches them to a GitHub release.
+#
+# To publish a new set of binaries:
+#   git tag cgal-tools-v1 && git push origin cgal-tools-v1
+# then, once this workflow has finished, run locally:
+#   julia cgal_tools/bind_artifacts.jl cgal-tools-v1
+# and commit the updated Artifacts.toml.
+#
+# Running it by hand (workflow_dispatch) builds and uploads the tarballs as
+# workflow artifacts only, without making a release.
+name: build-cgal-tools
+
+on:
+  push:
+    tags: ['cgal-tools-v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            triplet: x86_64-w64-mingw32
+          - os: ubuntu-latest           # builds against glibc 2.17 (see below), so any runner works
+            triplet: x86_64-linux-gnu
+          - os: macos-latest          # Apple Silicon
+            triplet: aarch64-apple-darwin
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: ${{ matrix.os == 'windows-latest' && 'msys2 {0}' || 'bash' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install toolchain (Windows / MSYS2 UCRT64)
+        if: runner.os == 'Windows'
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          install: >-
+            mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-ninja
+            mingw-w64-ucrt-x86_64-boost mingw-w64-ucrt-x86_64-gmp mingw-w64-ucrt-x86_64-mpfr
+            tar xz curl
+      # Linux: conda-forge's compiler builds against glibc 2.17, so the tools run on practically
+      # any Linux from 2014 on (CentOS 7, Ubuntu 16.04+, Debian 9+, HPC clusters), whatever the
+      # runner's own glibc. conda-forge has no static GMP/MPFR, so they are linked as shared
+      # libraries and build.sh ships them in lib/ next to bin/.
+      - name: Install toolchain (Linux, conda-forge, glibc 2.17)
+        if: runner.os == 'Linux'
+        run: |
+          curl -fsSL https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xj -C "$RUNNER_TEMP" bin/micromamba
+          "$RUNNER_TEMP/bin/micromamba" create -y -q -r "$RUNNER_TEMP/mamba" -p "$RUNNER_TEMP/cgal-env" \
+            -c conda-forge --override-channels \
+            gxx_linux-64 "sysroot_linux-64=2.17" cmake make libboost-devel gmp mpfr patchelf
+          echo "$RUNNER_TEMP/cgal-env/bin" >> "$GITHUB_PATH"
+          echo "CONDA_PREFIX=$RUNNER_TEMP/cgal-env" >> "$GITHUB_ENV"
+          echo "CXX=$RUNNER_TEMP/cgal-env/bin/x86_64-conda-linux-gnu-g++" >> "$GITHUB_ENV"
+          echo "LINUX_CMAKE_ARGS=-DCGAL_TOOLS_STATIC=OFF -DCMAKE_PREFIX_PATH=$RUNNER_TEMP/cgal-env" >> "$GITHUB_ENV"
+      - name: Install toolchain (macOS)
+        if: runner.os == 'macOS'
+        run: brew install boost gmp mpfr
+
+      - name: Build
+        env:
+          CMAKE_EXTRA_ARGS: ${{ runner.os == 'Windows' && '-G Ninja' || env.LINUX_CMAKE_ARGS }}
+        run: bash cgal_tools/build.sh ${{ matrix.triplet }} dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cgal_tools-${{ matrix.triplet }}
+          path: dist/cgal_tools-${{ matrix.triplet }}.tar.gz
+
+  release:
+    # Publish whatever platforms built, so one broken runner doesn't block the release.
+    if: ${{ always() && startsWith(github.ref, 'refs/tags/cgal-tools-v') }}
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.tar.gz
+          fail_on_unmatched_files: false
+          body: Prebuilt CGAL tools used by BuildCGAL. Pkg downloads these automatically; you do not need to fetch them by hand.
